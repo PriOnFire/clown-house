@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLOWN HOUSE: AFTER HOURS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+  <canvas id="gl"></canvas>
+
+  <!-- CRT / VHS overlay stack -->
+  <div id="fx-vignette" class="fx"></div>
+  <div id="fx-scanlines" class="fx"></div>
+  <div id="fx-grain" class="fx"></div>
+  <div id="fx-danger" class="fx"></div>
+  <div id="fx-flash" class="fx"></div>
+  <div id="fx-dark" class="fx"></div>
+
+  <!-- MAIN MENU -->
+  <div id="menu" class="screen">
+    <div class="menu-cam glitch-dim" id="menu-cam">CAM 04 &mdash; <span id="menu-clock">11:43:17 PM</span><span class="recdot"></span>REC</div>
+    <div class="menu-tape">PLAY &#9654; &nbsp;SP &nbsp;0:00:00</div>
+    <div class="menu-core">
+      <div class="menu-kicker">HAPPYLAND FAMILY FUN CENTER &mdash; CLOSED SINCE 2018</div>
+      <h1 id="menu-title" class="glitchy" data-text="CLOWN HOUSE">CLOWN HOUSE</h1>
+      <div id="menu-sub" class="glitch-dim">AFTER&nbsp;HOURS</div>
+      <div id="menu-tag">&ldquo;The party ended. They didn&rsquo;t.&rdquo;</div>
+      <div class="menu-buttons">
+        <button id="btn-play" class="mbtn">PLAY</button>
+        <button id="btn-howto" class="mbtn">HOW TO PLAY</button>
+        <button id="btn-settings" class="mbtn">SETTINGS</button>
+        <button id="btn-credits" class="mbtn">CREDITS</button>
+      </div>
+      <div class="menu-name">
+        <label for="menu-tagname">EXPLORER&nbsp;TAG</label>
+        <input id="menu-tagname" maxlength="12" value="EXPLORER_7" spellcheck="false">
+      </div>
+      <div id="menu-note" class="menu-note">1&ndash;6 PLAYERS &middot; CO-OP HORROR &middot; SOLO PROTOTYPE BUILD v0.9 &middot; HEADPHONES RECOMMENDED</div>
+    </div>
+  </div>
+
+  <!-- MODAL PANELS -->
+  <div id="howto" class="screen panel hidden">
+    <h2>HOW TO PLAY</h2>
+    <div class="panel-body">
+      <p>You and your friends broke into <b>HappyLand Family Fun Center</b>, closed since 2018. The doors locked behind you. Something inside still thinks the party is going.</p>
+      <div class="keys">
+        <div><span class="key">W A S D</span> Move</div>
+        <div><span class="key">MOUSE</span> Look (click to capture)</div>
+        <div><span class="key">SHIFT</span> Sprint (stamina)</div>
+        <div><span class="key">E</span> Interact / hide / revive-mash</div>
+        <div><span class="key">F</span> Flashlight</div>
+        <div><span class="key">C</span> CCTV (at security desk)</div>
+        <div><span class="key">TAB</span> Collected lore</div>
+        <div><span class="key">ESC</span> Pause</div>
+      </div>
+      <p>Restore power. Complete the party tasks. The clowns follow sound &mdash; running, arcade machines and popped balloons are loud. Balloons drifting toward you mean <b>Bobby</b> is close. When the music stops, <b>Jingle</b> is close. If a friend is standing perfectly still&hellip; check twice.</p>
+      <p>Downed once: mash <span class="key">E</span> to get back up. Downed twice: the party keeps you.</p>
+    </div>
+    <button class="mbtn btn-back" data-back>BACK</button>
+  </div>
+
+  <div id="settings" class="screen panel hidden">
+    <h2>SETTINGS</h2>
+    <div class="panel-body settings-grid">
+      <label>MASTER VOLUME <input type="range" id="set-vol" min="0" max="100" value="80"></label>
+      <label>MOUSE SENSITIVITY <input type="range" id="set-sens" min="20" max="200" value="100"></label>
+      <label>FILM GRAIN <input type="checkbox" id="set-grain" checked></label>
+      <label>CAMERA BOB <input type="checkbox" id="set-bob" checked></label>
+      <label>QUALITY
+        <select id="set-quality">
+          <option value="high" selected>HIGH</option>
+          <option value="low">LOW</option>
+        </select>
+      </label>
+    </div>
+    <button class="mbtn btn-back" data-back>BACK</button>
+  </div>
+
+  <div id="credits" class="screen panel hidden">
+    <h2>CREDITS</h2>
+    <div class="panel-body credits">
+      <p class="big">CLOWN HOUSE: AFTER HOURS</p>
+      <p>A playable concept prototype for a multiplayer Roblox horror game.</p>
+      <p>HappyLand, PartyKeeper, Bobby, Jingle, Mimic, Tickets and Mr. Happy are original creations for this project. Any resemblance to real indoor playgrounds, living or closed, is nostalgic but coincidental.</p>
+      <p class="dim">Design, code, art direction and procedural audio: this prototype build.<br>Roblox Studio / Luau implementation files: <b>roblox/</b> folder.<br>Full design document: <b>docs/GAME_DESIGN.md</b>.</p>
+      <p class="warn">No clowns were harmed. Several were awakened.</p>
+    </div>
+    <button class="mbtn btn-back" data-back>BACK</button>
+  </div>
+
+  <!-- INTRO -->
+  <div id="intro" class="screen hidden">
+    <div id="intro-text"></div>
+    <div class="intro-skip">CLICK / E TO CONTINUE</div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div id="obj-panel">
+      <div class="hud-label">OBJECTIVE</div>
+      <div id="obj-title">EXPLORE</div>
+      <div id="obj-sub"></div>
+    </div>
+    <div id="players-panel">
+      <div class="hud-label right">PARTY</div>
+      <div id="players-list"></div>
+    </div>
+    <div id="battery">
+      <div class="hud-label">FLASHLIGHT</div>
+      <div id="battery-shell"><div id="battery-fill"></div></div>
+    </div>
+    <div id="item-slot">
+      <div id="item-icon">&#9634;</div>
+      <div id="item-name">EMPTY</div>
+    </div>
+    <div id="tickets" class="hidden"><span class="ticket-icon"></span><span id="ticket-count">0</span> TICKETS</div>
+    <div id="prompt" class="hidden"><span id="prompt-key" class="key">E</span><span id="prompt-label">OPEN</span></div>
+    <div id="hold-radial" class="hidden"><div id="hold-fill"></div></div>
+    <div id="crosshair"></div>
+    <div id="subtitle" class="hidden"><span id="sub-speaker">MR. HAPPY</span><span id="sub-text"></span></div>
+    <div id="chapter-card" class="hidden">
+      <div id="chap-num">CHAPTER 1</div>
+      <div id="chap-title">AFTER HOURS</div>
+      <div id="chap-sub"></div>
+    </div>
+    <div id="obj-toast" class="hidden">
+      <div id="ot-main">NEW OBJECTIVE</div>
+      <div id="ot-sub"></div>
+    </div>
+    <div id="stamina"><div id="stamina-fill"></div></div>
+  </div>
+
+  <!-- CCTV -->
+  <div id="cctv" class="screen hidden">
+    <div class="cctv-head">
+      <span>HAPPYLAND SECURITY &mdash; NODE 04</span>
+      <span id="cctv-clock">23:43:17</span>
+      <span class="recdot"></span><span>REC</span>
+    </div>
+    <div id="cctv-grid"></div>
+    <div class="cctv-foot">C / ESC &mdash; EXIT MONITOR &nbsp;&middot;&nbsp; SIGNAL SUBJECT TO INTERFERENCE</div>
+  </div>
+
+  <!-- LORE MODAL -->
+  <div id="lore-modal" class="screen hidden">
+    <div id="lore-box">
+      <div id="lore-kicker">RECOVERED MEDIA</div>
+      <div id="lore-title">VHS 01</div>
+      <div id="lore-body"></div>
+      <div class="lore-hint">E / CLICK TO CLOSE</div>
+    </div>
+  </div>
+
+  <!-- LORE INVENTORY -->
+  <div id="lore-list" class="screen hidden">
+    <div id="lore-list-box">
+      <div class="hud-label">RECOVERED MEDIA — <span id="lore-count">0</span>/4 VHS</div>
+      <div id="lore-entries"></div>
+      <div class="lore-hint">TAB TO CLOSE</div>
+    </div>
+  </div>
+
+  <!-- DOWNED -->
+  <div id="downed" class="screen hidden">
+    <div id="downed-title">YOU ARE DOWN</div>
+    <div id="downed-sub">MASH <span class="key">E</span> TO GET UP</div>
+    <div id="downed-shell"><div id="downed-fill"></div></div>
+  </div>
+
+  <!-- JUMPSCARE -->
+  <canvas id="scare" class="hidden"></canvas>
+
+  <!-- ENDING -->
+  <div id="ending" class="screen hidden">
+    <div id="ending-kicker">GAME OVER</div>
+    <div id="ending-tag">ENDING A</div>
+    <h1 id="ending-title">ESCAPE</h1>
+    <div id="ending-body"></div>
+    <div id="ending-extra"></div>
+    <div class="menu-buttons row">
+      <button id="btn-again" class="mbtn">PLAY AGAIN</button>
+      <button id="btn-menu" class="mbtn">MAIN MENU</button>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pause" class="screen hidden">
+    <h2 class="glitchy small" data-text="PAUSED">PAUSED</h2>
+    <div class="menu-buttons">
+      <button id="btn-resume" class="mbtn">RESUME</button>
+      <button id="btn-quit" class="mbtn">QUIT TO MENU</button>
+    </div>
+  </div>
+
+  <!-- ACHIEVEMENT TOAST -->
+  <div id="ach-toast" class="hidden">
+    <div class="ach-kicker">ACHIEVEMENT UNLOCKED</div>
+    <div id="ach-name">FIRST NIGHT</div>
+    <div id="ach-desc"></div>
+  </div>
+
+  <div id="boot-error" class="hidden"></div>
+</div>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
